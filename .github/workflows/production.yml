@@ -1,0 +1,54 @@
+name: Deployment To Production
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: actions checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.18'
+
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: "${{ secrets.AWS_ACCESS_KEY_ID }}"
+          aws-secret-access-key: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+          aws-region: "${{ secrets.AWS_REGION }}"
+
+      - name: Cache npm modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.OS }}-npm-cache-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.OS }}-npm-cache-
+
+      - name: Setup Env dependencies
+        run: |
+          echo "${{vars.ENV}}" > .env
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Build
+        run: |
+          export REACT_APP_BASE_URL="https://api.creatorwrk.com/user/v1"
+          export REACT_APP_CHAT_URL="https://api.creatorwrk.com/chat/v1"
+          export REACT_APP_LANDING_PAGE_URL="https://creatorwrk.com"
+          export REACT_APP_RECAPTCHA_KEY="6LcPySMqAAAAANyziD4Iy2fqb99DWz0JhQU0Emzv"
+          npm run build
+
+      - name: Deploy to AWS S3
+        run: |
+          aws s3 sync build s3://${{ secrets.S3_BUCKET_NAME }} --delete
+      - name: Invalidate CloudFront cache
+        run: >
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"

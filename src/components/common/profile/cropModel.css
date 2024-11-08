@@ -1,0 +1,34 @@
+.ant-modal .ant-modal-title {
+  background: #060717;
+  color: #fff;
+}
+
+.ant-btn-primary {
+  width: 110px;
+  height: 40px;
+  border-radius: 500px;
+  color: black;
+  background-color: white;
+}
+.ant-btn-default {
+  width: 110px;
+  height: 40px;
+  border-radius: 500px;
+  color: black;
+  background-color: white;
+  /* bottom: 4%;
+  position: absolute; */
+}
+
+.ant-slider-horizontal {
+  background-color: white;
+}
+.img-crop-control button {
+  background-color: transparent;
+  color: white;
+  width: 24px;
+  height: 24px;
+}
+.ant-btn {
+  bottom: 0px;
+}
